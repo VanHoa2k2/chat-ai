@@ -1,0 +1,191 @@
+@import url('https://fonts.googleapis.com/css2?family=Roobert:wght@400;500;600&family=Space+Mono&display=swap');
+
+:root {
+  /* Clay Design System Colors */
+  --color-cream: #faf9f7;
+  --color-black: #000000;
+  --color-white: #ffffff;
+  
+  /* Swatch Palette */
+  --color-matcha-300: #84e7a5;
+  --color-matcha-600: #078a52;
+  --color-matcha-800: #02492a;
+  --color-slushie-500: #3bd3fd;
+  --color-slushie-800: #0089ad;
+  --color-lemon-400: #f8cc65;
+  --color-lemon-500: #fbbd41;
+  --color-lemon-700: #d08a11;
+  --color-lemon-800: #9d6a09;
+  --color-ube-300: #c1b0ff;
+  --color-ube-800: #43089f;
+  --color-ube-900: #32037d;
+  --color-pomegranate-400: #fc7981;
+  --color-blueberry-800: #01418d;
+  
+  /* Neutral Scale (Warm) */
+  --color-silver: #9f9b93;
+  --color-charcoal: #55534e;
+  --color-dark-charcoal: #333333;
+  
+  /* Surface & Border */
+  --color-oat: #dad4c8;
+  --color-oat-light: #eee9df;
+  --color-cool-border: #e6e8ec;
+  --color-dark-border: #525a69;
+  --color-light-frost: #eff1f3;
+  
+  /* Badge */
+  --color-badge-bg: #f0f8ff;
+  --color-badge-text: #3859f9;
+  
+  /* Shadows */
+  --shadow-clay: rgba(0,0,0,0.1) 0px 1px 1px, rgba(0,0,0,0.04) 0px -1px 1px inset, rgba(0,0,0,0.05) 0px -0.5px 1px;
+  --shadow-hard: rgb(0,0,0) -7px 7px;
+  
+  /* Typography */
+  --font-primary: 'Roobert', Arial, sans-serif;
+  --font-mono: 'Space Mono', monospace;
+  
+  /* Font weights */
+  --weight-heading: 600;
+  --weight-ui: 500;
+  --weight-body: 400;
+  
+  /* Border radius */
+  --radius-sharp: 4px;
+  --radius-standard: 8px;
+  --radius-badge: 11px;
+  --radius-card: 12px;
+  --radius-feature: 24px;
+  --radius-section: 40px;
+  --radius-pill: 1584px;
+  
+  /* Spacing */
+  --space-1: 1px;
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-6: 6.4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-18: 18px;
+  --space-20: 20px;
+  --space-24: 24px;
+  
+  /* Layout widths */
+  --sidebar-left-width: 260px;
+  --sidebar-right-width: 56px;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Roobert:wght@400;500;600&family=Space+Mono&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-primary);
+  font-size: 16px;
+  font-weight: var(--weight-body);
+  line-height: 1.50;
+  color: var(--color-black);
+  background: var(--color-cream);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-oat-light);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-oat);
+  border-radius: var(--radius-sharp);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-silver);
+}
+
+/* Button base styles - no global hover animation, apply per component */
+button {
+  font-family: var(--font-primary);
+  font-size: 16px;
+  font-weight: var(--weight-ui);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  padding: var(--space-6) var(--space-12);
+  border-radius: var(--radius-standard);
+  transition: all 0.2s ease;
+}
+
+button:focus {
+  outline: 2px solid var(--color-badge-text);
+  outline-offset: 2px;
+}
+
+/* Input styles */
+input, textarea {
+  font-family: var(--font-primary);
+  font-size: 16px;
+  border: 1px solid var(--color-charcoal);
+  border-radius: var(--radius-sharp);
+  padding: var(--space-8) var(--space-12);
+  background: var(--color-white);
+  color: var(--color-black);
+  transition: border-color 0.2s ease;
+}
+
+input:focus, textarea:focus {
+  outline: 2px solid var(--color-badge-text);
+  outline-offset: 2px;
+  border-color: var(--color-badge-text);
+}
+
+/* Card styles */
+.card {
+  background: var(--color-white);
+  border: 1px solid var(--color-oat);
+  border-radius: var(--radius-feature);
+  box-shadow: var(--shadow-clay);
+}
+
+/* Utility classes */
+.text-secondary {
+  color: var(--color-silver);
+}
+
+.text-muted {
+  color: var(--color-charcoal);
+}
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Loading animation */
+@keyframes bounce {
+  0%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-8px);
+  }
+}
