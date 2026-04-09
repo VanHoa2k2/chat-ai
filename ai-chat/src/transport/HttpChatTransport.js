@@ -136,6 +136,12 @@ export class HttpChatTransport extends ChatTransport {
     const systemPrompt = agentRoleId ? agentDescriptions[agentRoleId] : 'You are a helpful AI assistant.';
     let responseText = null;
     
+    // Build conversation history
+    const conversationHistory = this._mockMessages[sessionId] || [];
+    const historyMessages = conversationHistory
+      .filter(m => m.role !== 'system')
+      .map(m => ({ role: m.role, content: m.content }));
+    
     try {
       const headers = {
         'Content-Type': 'application/json'
@@ -144,15 +150,18 @@ export class HttpChatTransport extends ChatTransport {
         headers['Authorization'] = `Bearer ${this._apiKey}`;
       }
       
+      const messages = [
+        { role: 'system', content: systemPrompt },
+        ...historyMessages,
+        { role: 'user', content: content }
+      ];
+      
       const response = await fetch(this.apiURL, {
         method: 'POST',
         headers,
         body: JSON.stringify({
           model: this.defaultModel,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: content }
-          ],
+          messages,
           max_tokens: 1000
         })
       });
