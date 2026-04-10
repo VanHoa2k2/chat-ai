@@ -3,18 +3,19 @@ import { MessageCircle, Pencil, Trash2 } from 'lucide-react';
 import { useChatStore } from '../../store/chatStore';
 import { useDeleteSession } from '../../hooks/useChat';
 import { DropdownMenuWrapper } from '../DropdownMenu';
+import type { Session } from '../../types';
 
 export function SessionList() {
   const { sessions, activeSpace, activeSession } = useChatStore();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const deleteSessionMutation = useDeleteSession();
 
-  const filteredSessions = sessions.filter((s) => 
+  const filteredSessions = sessions.filter((s: Session) => 
     activeSpace ? s.spaceId === activeSpace.id : !s.spaceId
   );
 
   const handleClick = (sessionId: string) => {
-    const session = sessions.find(s => s.id === sessionId);
+    const session = sessions.find((s: Session) => s.id === sessionId);
     if (session) {
       useChatStore.getState().setActiveSession(session);
     }
@@ -29,7 +30,7 @@ export function SessionList() {
 
   const handleRename = (e: React.MouseEvent, sessionId: string) => {
     e.stopPropagation();
-    const session = sessions.find(s => s.id === sessionId);
+    const session = sessions.find((s: Session) => s.id === sessionId);
     if (!session) return;
     const newTitle = prompt('Enter new title:', session.title);
     if (newTitle && newTitle.trim() !== session.title) {
@@ -46,7 +47,7 @@ export function SessionList() {
         {filteredSessions.length === 0 ? (
           <div className="text-center text-silver text-sm py-4">No sessions</div>
         ) : (
-          filteredSessions.map((session) => (
+          filteredSessions.map((session: Session) => (
             <div
               key={session.id}
               className={`relative flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors ${

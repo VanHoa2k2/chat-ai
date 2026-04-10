@@ -33,7 +33,7 @@ export function AgentRoleList() {
         Agent Roles
       </div>
       <div className="space-y-1">
-        {agentRoles.map((agent) => (
+        {agentRoles.map((agent: AgentRole) => (
           <div
             key={agent.id}
             className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors ${

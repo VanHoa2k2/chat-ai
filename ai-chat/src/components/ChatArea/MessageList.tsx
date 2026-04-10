@@ -11,7 +11,7 @@ export function MessageList() {
   
   const messages = useMemo(() => {
     if (!activeSession) return [];
-    return allMessages.filter(m => m.sessionId === activeSession.id);
+    return allMessages.filter((m: Message) => m.sessionId === activeSession.id);
   }, [allMessages, activeSession]);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);

@@ -3,6 +3,7 @@ import { Folder, Pencil, Trash2 } from 'lucide-react';
 import { useChatStore } from '../../store/chatStore';
 import { useDeleteSpace } from '../../hooks/useChat';
 import { DropdownMenuWrapper } from '../DropdownMenu';
+import type { Space, Session } from '../../types';
 
 export function SpaceList() {
   const { spaces, sessions, activeSpace } = useChatStore();
@@ -10,7 +11,7 @@ export function SpaceList() {
   const deleteSpaceMutation = useDeleteSpace();
 
   const handleClick = (spaceId: string) => {
-    const space = spaces.find(s => s.id === spaceId);
+    const space = spaces.find((s: Space) => s.id === spaceId);
     if (space) {
       useChatStore.getState().setActiveSpace(space);
     }
@@ -25,7 +26,7 @@ export function SpaceList() {
 
   const handleRename = (e: React.MouseEvent, spaceId: string) => {
     e.stopPropagation();
-    const space = spaces.find(s => s.id === spaceId);
+    const space = spaces.find((s: Space) => s.id === spaceId);
     if (!space) return;
     const newName = prompt('Enter space name:', space.name);
     if (newName && newName.trim() !== space.name) {
@@ -33,7 +34,7 @@ export function SpaceList() {
     }
   };
 
-  const getSessionCount = (spaceId: string) => sessions.filter(s => s.spaceId === spaceId).length;
+  const getSessionCount = (spaceId: string) => sessions.filter((s: Session) => s.spaceId === spaceId).length;
 
   return (
     <div className="mb-4">
@@ -41,7 +42,7 @@ export function SpaceList() {
         <span>Spaces</span>
       </div>
       <div className="space-y-1">
-        {spaces.map((space) => (
+        {spaces.map((space: Space) => (
           <div
             key={space.id}
             className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors ${

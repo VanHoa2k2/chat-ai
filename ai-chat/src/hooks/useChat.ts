@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useChatStore, mockAgentRoles, mockSpaces } from '../store/chatStore';
-import type { Space, Session, AgentRole } from '../types';
+import type { Space, Session, AgentRole, Message } from '../types';
 
 // API Configuration
 const API_URL = 'https://api.dision.tech/llm/v1/chat/completions';
@@ -77,7 +77,7 @@ export function useSessions(spaceId?: string) {
     queryFn: async () => {
       await new Promise(resolve => setTimeout(resolve, 200));
       if (spaceId) {
-        return sessions.filter(s => s.spaceId === spaceId);
+        return sessions.filter((s: Session) => s.spaceId === spaceId);
       }
       return sessions;
     },
@@ -93,7 +93,7 @@ export function useMessages(sessionId: string | null) {
     queryFn: async () => {
       if (!sessionId) return [];
       await new Promise(resolve => setTimeout(resolve, 200));
-      return allMessages.filter(m => m.sessionId === sessionId);
+      return allMessages.filter((m: Message) => m.sessionId === sessionId);
     },
     enabled: !!sessionId,
     staleTime: 0,

@@ -8,6 +8,8 @@ export type MessageType = 'text' | 'image' | 'file' | 'error';
 
 export type MessageState = 'pending' | 'sent' | 'streaming' | 'done' | 'error';
 
+export type AppType = 'agentChat' | 'files' | 'mails' | 'knowledgeBase';
+
 export interface Message {
   id: string;
   sessionId: string;
@@ -74,6 +76,38 @@ export interface ChatState {
   sessions: Session[];
   loading: LoadingState;
   error: string | null;
+}
+
+export interface ChatStore extends ChatState {
+  // Actions - Selection
+  setActiveApp: (app: AppType) => void;
+  setActiveSpace: (space: Space | null) => void;
+  setActiveSession: (session: Session | null) => void;
+  setActiveAgentRole: (agent: AgentRole | null) => void;
+  
+  // Actions - Data
+  setAgentRoles: (agents: AgentRole[]) => void;
+  setSpaces: (spaces: Space[]) => void;
+  setSessions: (sessions: Session[]) => void;
+  setMessages: (messages: Message[]) => void;
+  addMessage: (message: Message) => void;
+  addSession: (session: Session) => void;
+  addSpace: (space: Space) => void;
+  removeSpace: (spaceId: string) => void;
+  removeSession: (sessionId: string) => void;
+  updateSession: (sessionId: string, updates: Partial<Session>) => void;
+  updateSpace: (spaceId: string, updates: Partial<Space>) => void;
+  
+  // Actions - Loading & Error
+  setLoading: (key: keyof LoadingState, value: boolean) => void;
+  setError: (error: string | null) => void;
+  
+  // Data operations
+  createSession: (agentRoleId?: string, spaceId?: string) => Session;
+  createSpace: (name: string, description?: string) => Space;
+  sendMessage: (content: string) => Promise<{ userMessage: Message; assistantMessage: Message }>;
+  deleteSpace: (spaceId: string) => void;
+  deleteSession: (sessionId: string) => void;
 }
 
 export interface TransportConfig {
