@@ -1,18 +1,20 @@
+import { MessageCircle, FolderOpen, Mail, BookOpen } from 'lucide-react';
 import { useChatStore } from '../../store/chatStore';
+import { AppButton } from './AppButton';
 import type { AppType } from '../../types';
 
 interface App {
   type: AppType;
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   disabled?: boolean;
 }
 
 const apps: App[] = [
-  { type: 'agentChat', icon: '💬', label: 'Agent Chat' },
-  { type: 'files', icon: '📁', label: 'Files', disabled: true },
-  { type: 'mails', icon: '✉️', label: 'Mails', disabled: true },
-  { type: 'knowledgeBase', icon: '📚', label: 'Knowledge Base', disabled: true }
+  { type: 'agentChat', icon: <MessageCircle className="w-5 h-5" />, label: 'Agent Chat' },
+  { type: 'files', icon: <FolderOpen className="w-5 h-5" />, label: 'Files', disabled: true },
+  { type: 'mails', icon: <Mail className="w-5 h-5" />, label: 'Mails', disabled: true },
+  { type: 'knowledgeBase', icon: <BookOpen className="w-5 h-5" />, label: 'Knowledge Base', disabled: true }
 ];
 
 export default function SidebarRight() {
@@ -25,26 +27,14 @@ export default function SidebarRight() {
   
   return (
     <div className="w-[60px] min-w-[60px] h-screen bg-white border-l border-oat flex flex-col items-center py-3 gap-1">
-      {apps.map((app) => {
-        const isActive = activeApp === app.type;
-        const isDisabled = app.disabled;
-        
-        return (
-          <button
-            key={app.type}
-            className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl cursor-pointer transition-all border-0 ${
-              isActive 
-                ? 'bg-cream' 
-                : 'bg-transparent opacity-40 hover:opacity-100'
-            } ${isDisabled ? 'opacity-20 cursor-not-allowed' : ''}`}
-            onClick={() => handleAppClick(app)}
-            disabled={isDisabled}
-            title={isDisabled ? `${app.label} (Coming soon)` : app.label}
-          >
-            {app.icon}
-          </button>
-        );
-      })}
+      {apps.map((app) => (
+        <AppButton
+          key={app.type}
+          {...app}
+          isActive={activeApp === app.type}
+          onClick={() => handleAppClick(app)}
+        />
+      ))}
     </div>
   );
 }

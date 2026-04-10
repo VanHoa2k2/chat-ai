@@ -1,47 +1,18 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { ChatState, AgentRole, Space, Session, Message, AppType } from '../types';
+import type { ChatState, AgentRole, Space, Session, Message, AppType, MessageState, MessageType } from '../types';
+import { HttpChatTransport } from '../transport/HttpChatTransport';
 
 const generateId = () => `id-${Date.now()}-${Math.random().toString(36).substr(2, 9)}${Math.random().toString(36).substr(2, 5)}`;
 
-interface ChatStore extends ChatState {
-  // Actions - Selection
-  setActiveApp: (app: AppType) => void;
-  setActiveSpace: (space: Space | null) => void;
-  setActiveSession: (session: Session | null) => void;
-  setActiveAgentRole: (agent: AgentRole | null) => void;
-  
-  // Actions - Data
-  setAgentRoles: (agents: AgentRole[]) => void;
-  setSpaces: (spaces: Space[]) => void;
-  setSessions: (sessions: Session[]) => void;
-  setMessages: (messages: Message[]) => void;
-  addMessage: (message: Message) => void;
-  addSession: (session: Session) => void;
-  addSpace: (space: Space) => void;
-  removeSpace: (spaceId: string) => void;
-  removeSession: (sessionId: string) => void;
-  updateSession: (sessionId: string, updates: Partial<Session>) => void;
-  updateSpace: (spaceId: string, updates: Partial<Space>) => void;
-  
-  // Actions - Loading & Error
-  setLoading: (key: keyof ChatState['loading'], value: boolean) => void;
-  setError: (error: string | null) => void;
-  
-  // Data operations
-  createSession: (agentRoleId?: string, spaceId?: string) => Session;
-  createSpace: (name: string, description?: string) => Space;
-  sendMessage: (content: string) => { userMessage: Message; assistantMessage: Message };
-  deleteSpace: (spaceId: string) => void;
-  deleteSession: (sessionId: string) => void;
-}
-
 const agentDescriptions: Record<string, string> = {
   'agent-1': 'You are a Code Assistant. Help with coding tasks, debugging, and explaining programming concepts.',
-  'agent-2': 'You are a Writing Assistant. Help with writing, editing, and improving content.',
+  'agent-2': 'You are a Writing Assistant. Help with writing, editing, improving content.',
   'agent-3': 'You are a Research Assistant. Help with research and information gathering.',
   'agent-4': 'You are a Data Analyst. Help analyze data and provide insights.',
 };
+
+const chatTransport = new HttpChatTransport();
 
 export const useChatStore = create<ChatStore>()(
   persist(
@@ -64,76 +35,73 @@ export const useChatStore = create<ChatStore>()(
       },
       error: null,
 
-      // Selection Actions
-      setActiveApp: (app) => set({ activeApp: app }),
+// Selection Actions
+      setActiveApp: (app: AppType) => set({ activeApp: app }),
       
-      setActiveSpace: (space) => set({ 
+      setActiveSpace: (space: Space | null) => set({ 
         activeSpace: space, 
         activeSession: null, 
       }),
       
-      setActiveSession: (session) => set({ 
+      setActiveSession: (session: Session | null) => set({ 
         activeSession: session, 
       }),
       
-      setActiveAgentRole: (agent) => set({ activeAgentRole: agent }),
+      setActiveAgentRole: (agent: AgentRole | null) => set({ activeAgentRole: agent }),
 
-      // Data Actions
-      setAgentRoles: (agents) => set({ agentRoles: agents }),
-      setSpaces: (spaces) => set({ spaces }),
-      setSessions: (sessions) => set({ sessions }),
-      setMessages: (messages) => set({ messages }),
+      // Data Setters
+      setAgentRoles: (agents: AgentRole[]) => set({ agentRoles: agents }),
+      setSpaces: (spaces: Space[]) => set({ spaces }),
+      setSessions: (sessions: Session[]) => set({ sessions }),
+      setMessages: (messages: Message[]) => set({ messages }),
       
-      addMessage: (message) => set((state) => ({ 
+      addMessage: (message: Message) => set((state: ChatState) => ({ 
         messages: [...state.messages, message] 
       })),
       
-      addSession: (session) => set((state) => {
-        console.log('[chatStore] addSession called, current sessions:', state.sessions.length);
+      addSession: (session: Session) => set((state: ChatState) => {
         const exists = state.sessions.some(s => s.id === session.id);
         if (exists) return state;
-        const newState = { sessions: [session, ...state.sessions] };
-        console.log('[chatStore] after addSession, sessions:', newState.sessions.length);
-        return newState;
+        return { sessions: [session, ...state.sessions] };
       }),
       
-      addSpace: (space) => set((state) => {
+      addSpace: (space: Space) => set((state: ChatState) => {
         const exists = state.spaces.some(s => s.id === space.id);
         if (exists) return state;
         return { spaces: [...state.spaces, space] };
       }),
-      
-      removeSpace: (spaceId) => set((state) => ({
+
+      removeSpace: (spaceId: string) => set((state: ChatState) => ({
         spaces: state.spaces.filter(s => s.id !== spaceId),
         activeSpace: state.activeSpace?.id === spaceId ? null : state.activeSpace,
       })),
       
-      removeSession: (sessionId) => set((state) => ({
+      removeSession: (sessionId: string) => set((state: ChatState) => ({
         sessions: state.sessions.filter(s => s.id !== sessionId),
         activeSession: state.activeSession?.id === sessionId ? null : state.activeSession,
       })),
 
-      updateSession: (sessionId, updates) => set((state) => ({
+      updateSession: (sessionId: string, updates: Partial<Session>) => set((state: ChatState) => ({
         sessions: state.sessions.map(s => 
           s.id === sessionId ? { ...s, ...updates } : s
         ),
       })),
 
-      updateSpace: (spaceId, updates) => set((state) => ({
+      updateSpace: (spaceId: string, updates: Partial<Space>) => set((state: ChatState) => ({
         spaces: state.spaces.map(s => 
           s.id === spaceId ? { ...s, ...updates } : s
         ),
       })),
 
       // Loading & Error
-      setLoading: (key, value) => set((state) => ({
+      setLoading: (key: keyof ChatState['loading'], value: boolean) => set((state: ChatState) => ({
         loading: { ...state.loading, [key]: value }
       })),
       
-      setError: (error) => set({ error }),
+      setError: (error: string | null) => set({ error }),
 
       // Data Operations
-      createSession: (agentRoleId, spaceId) => {
+      createSession: (agentRoleId?: string, spaceId?: string): Session => {
         const newSession: Session = {
           id: generateId(),
           title: 'New Chat',
@@ -150,7 +118,7 @@ export const useChatStore = create<ChatStore>()(
         return newSession;
       },
 
-      createSpace: (name, description) => {
+      createSpace: (name: string, description?: string): Space => {
         const colors = ['#078a52', '#43089f', '#3bd3fd', '#fbbd41', '#fc7981'];
         const newSpace: Space = {
           id: generateId(),
@@ -164,53 +132,58 @@ export const useChatStore = create<ChatStore>()(
         return newSpace;
       },
 
-      sendMessage: (content) => {
-        const { activeSession, activeAgentRole } = get();
-        const sessionId = activeSession?.id || generateId();
+      sendMessage: async (content: string): Promise<{ userMessage: Message; assistantMessage: Message }> => {
+        set((state: ChatState) => ({ loading: { ...state.loading, sending: true } }));
+        
+        let { activeAgentRole } = get();
+        let activeSession = get().activeSession;
+        let sessionId = activeSession?.id;
+        
+        // Create session if needed
+        if (!sessionId) {
+          const newSession = get().createSession(activeAgentRole?.id);
+          activeSession = newSession;
+          sessionId = newSession.id;
+        }
         
         // Create user message
         const userMessage: Message = {
           id: generateId(),
           sessionId,
           role: 'user',
+          type: 'text',
           content,
           createdAt: new Date().toISOString(),
-          state: 'done',
+          state: 'done' as MessageState,
         };
         
         get().addMessage(userMessage);
         
-        // Get system prompt based on agent
-        const systemPrompt = activeAgentRole?.id 
-          ? agentDescriptions[activeAgentRole.id] || 'You are a helpful AI assistant.'
-          : 'You are a helpful AI assistant.';
-        
-        // Simulate AI response (in real app, this would call the API)
-        const responses: Record<string, string> = {
-          'agent-1': `I can help you with coding! What specific programming task or concept would you like help with?`,
-          'agent-2': `I'd be happy to help with your writing! What kind of content would you like to create or improve?`,
-          'agent-3': `I'm ready to help with your research! What topic or information would you like to explore?`,
-          'agent-4': `I can help analyze your data! What kind of analysis would you like to perform?`,
-        };
-        
-        const responseText = activeAgentRole?.id 
-          ? responses[activeAgentRole.id] || `Thanks for your message! How can I help you today?`
-          : `Thanks for your message! How can I help you today?`;
+        // Call API via transport
+        let responseText: string;
+        try {
+          const result = await chatTransport.sendMessage(sessionId, content, activeAgentRole?.id || undefined);
+          responseText = result.assistantMessage.content;
+        } catch (error: unknown) {
+          console.error('API call failed:', error);
+          responseText = 'Sorry, I encountered an error. Please try again.';
+        }
         
         const assistantMessage: Message = {
           id: generateId(),
           sessionId,
           role: 'assistant',
+          type: 'text',
           content: responseText,
           createdAt: new Date().toISOString(),
-          state: 'done',
+          state: 'done' as MessageState,
         };
         
         get().addMessage(assistantMessage);
         
         // Update session preview
         if (activeSession) {
-          set((state) => ({
+          set((state: ChatState) => ({
             sessions: state.sessions.map(s => 
               s.id === activeSession.id 
                 ? { 
@@ -223,14 +196,16 @@ export const useChatStore = create<ChatStore>()(
           }));
         }
         
+        set((state: ChatState) => ({ loading: { ...state.loading, sending: false } }));
+        
         return { userMessage, assistantMessage };
       },
 
-      deleteSpace: (spaceId) => {
+      deleteSpace: (spaceId: string) => {
         get().removeSpace(spaceId);
       },
 
-      deleteSession: (sessionId) => {
+      deleteSession: (sessionId: string) => {
         get().removeSession(sessionId);
       },
     }),
@@ -251,7 +226,7 @@ export const mockAgentRoles: AgentRole[] = [
     id: 'agent-1',
     name: 'Code Assistant',
     description: 'Helps with coding tasks and debugging',
-    icon: '💻',
+    icon: 'laptop',
     color: '#078a52',
     systemPrompt: 'You are a Code Assistant.',
   },
@@ -259,7 +234,7 @@ export const mockAgentRoles: AgentRole[] = [
     id: 'agent-2',
     name: 'Writer',
     description: 'Helps with writing and editing content',
-    icon: '✍️',
+    icon: 'pencil',
     color: '#43089f',
     systemPrompt: 'You are a Writing Assistant.',
   },
@@ -267,7 +242,7 @@ export const mockAgentRoles: AgentRole[] = [
     id: 'agent-3',
     name: 'Researcher',
     description: 'Helps with research and information gathering',
-    icon: '🔍',
+    icon: 'search',
     color: '#3bd3fd',
     systemPrompt: 'You are a Research Assistant.',
   },
@@ -275,7 +250,7 @@ export const mockAgentRoles: AgentRole[] = [
     id: 'agent-4',
     name: 'Data Analyst',
     description: 'Helps analyze data and provide insights',
-    icon: '📊',
+    icon: 'barChart',
     color: '#fbbd41',
     systemPrompt: 'You are a Data Analyst.',
   },

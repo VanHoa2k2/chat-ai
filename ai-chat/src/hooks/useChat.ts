@@ -185,8 +185,8 @@ export function useCreateSession() {
   const { createSession, setActiveSession, setActiveAgentRole } = useChatStore();
   
   return useMutation({
-    mutationFn: async ({ agentRoleId }: { agentRoleId?: string }) => {
-      const session = createSession(agentRoleId);
+    mutationFn: async ({ agentRoleId, spaceId }: { agentRoleId?: string; spaceId?: string }) => {
+      const session = createSession(agentRoleId, spaceId);
       return session;
     },
     onSuccess: (session) => {

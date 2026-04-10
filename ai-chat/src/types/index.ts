@@ -1,19 +1,21 @@
 // Domain Types for AI Chat App
 
+import type { ReactNode } from 'react';
+
 export type MessageRole = 'user' | 'assistant' | 'system' | 'tool' | 'status';
+
+export type MessageType = 'text' | 'image' | 'file' | 'error';
 
 export type MessageState = 'pending' | 'sent' | 'streaming' | 'done' | 'error';
 
-export type AppType = 'agentChat' | 'files' | 'mails' | 'knowledgeBase';
-
-export interface AgentRole {
+export interface Message {
   id: string;
-  name: string;
-  description: string;
-  icon: string;
-  color: string;
-  systemPrompt?: string;
-  transportConfig?: Record<string, unknown>;
+  sessionId: string;
+  role: MessageRole;
+  type?: MessageType;
+  content: string;
+  createdAt: string;
+  state: MessageState;
 }
 
 export interface Session {
@@ -24,6 +26,16 @@ export interface Session {
   createdAt: string;
   updatedAt: string;
   lastMessagePreview: string | null;
+}
+
+export interface AgentRole {
+  id: string;
+  name: string;
+  description: string;
+  icon: string | React.ReactNode;
+  color: string;
+  systemPrompt?: string;
+  transportConfig?: Record<string, unknown>;
 }
 
 export interface Space {
