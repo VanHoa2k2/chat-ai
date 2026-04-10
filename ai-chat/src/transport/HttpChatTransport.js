@@ -45,10 +45,10 @@ function saveToStorage(data) {
 export class HttpChatTransport extends ChatTransport {
   constructor(config = {}) {
     super();
-    // Behest AI - Direct call (origin already allowed in dashboard)
-    this.apiURL = 'https://spicy-jade-485.behest.app/v1/chat/completions';
-    this.defaultModel = 'default';
-    this._apiKey = 'behest_sk_live_2b529a0e093140bdba5a25aec44aee1e';
+    // Dision AI API
+   this.apiURL = 'https://api.dision.tech/llm/v1/chat/completions';
+   this.defaultModel = 'chat';
+   this._apiKey = 'fPgoo2jhzd7lMVU4VWFGTN728orMMPsq';
     
     const stored = loadFromStorage();
     this._mockSpaces = stored?.spaces || [...mockSpaces];
@@ -237,6 +237,27 @@ export class HttpChatTransport extends ChatTransport {
     this._mockSpaces.push(newSpace);
     this._persist();
     return newSpace;
+  }
+
+  async deleteSpace(spaceId) {
+    await this._delay(100);
+    this._mockSpaces = this._mockSpaces.filter(s => s.id !== spaceId);
+    // Also delete all sessions in this space
+    const sessionIdsInSpace = this._mockSessions.filter(s => s.spaceId === spaceId).map(s => s.id);
+    sessionIdsInSpace.forEach(id => {
+      delete this._mockMessages[id];
+    });
+    this._mockSessions = this._mockSessions.filter(s => s.spaceId !== spaceId);
+    this._persist();
+    return true;
+  }
+
+  async deleteSession(sessionId) {
+    await this._delay(100);
+    this._mockSessions = this._mockSessions.filter(s => s.id !== sessionId);
+    delete this._mockMessages[sessionId];
+    this._persist();
+    return true;
   }
 
   _getRandomColor() {
