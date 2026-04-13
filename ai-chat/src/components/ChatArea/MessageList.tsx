@@ -22,7 +22,7 @@ export function MessageList() {
   
   if (!activeSession && !activeAgentRole) {
     return (
-      <div className="flex-1 flex items-center justify-center">
+      <div className="h-full flex items-center justify-center p-8">
         <div className="text-center">
           <Bot className="w-12 h-12 text-silver mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-charcoal mb-2">Start a conversation</h3>
@@ -35,7 +35,7 @@ export function MessageList() {
   }
   
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <div className="flex-1 p-4 space-y-4 pt-4 pb-4">
       {messages.map((message: Message) => (
         <div 
           key={message.id} 

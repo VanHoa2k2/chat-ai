@@ -39,8 +39,8 @@ export function MessageInput() {
   }
   
   return (
-    <div className="p-4 bg-white border-t border-oat">
-      <div className="flex items-end gap-2 bg-cream border border-oat rounded-2xl px-3 py-2">
+    <div className="pb-8">
+      <div className="flex items-end gap-2 bg-white border border-oat rounded-2xl px-3 py-2 shadow-[0_2px_8px_rgba(0,0,0,0.08)] max-w-4xl mx-auto">
         <textarea
           ref={textareaRef}
           value={input}
