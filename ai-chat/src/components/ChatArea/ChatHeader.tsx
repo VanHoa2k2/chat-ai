@@ -33,7 +33,7 @@ export function ChatHeader() {
   }
   
   return (
-    <div className="flex items-center justify-between px-4 py-3 min-h-[60px] sticky top-0 z-10">
+    <div className="chat-header flex items-center justify-between px-4 py-3 min-h-[60px] sticky top-0 z-10">
       <div className="flex items-center gap-3">
         <div>
           <h2 className="text-base font-semibold text-black m-0">{title}</h2>

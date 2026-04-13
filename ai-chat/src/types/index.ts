@@ -70,6 +70,7 @@ export interface ChatState {
   activeSpace: Space | null;
   activeSession: Session | null;
   activeAgentRole: AgentRole | null;
+  mobileSidebarOpen: boolean;
   messages: Message[];
   agentRoles: AgentRole[];
   spaces: Space[];
@@ -84,6 +85,7 @@ export interface ChatStore extends ChatState {
   setActiveSpace: (space: Space | null) => void;
   setActiveSession: (session: Session | null) => void;
   setActiveAgentRole: (agent: AgentRole | null) => void;
+  setMobileSidebarOpen: (open: boolean) => void;
   
   // Actions - Data
   setAgentRoles: (agents: AgentRole[]) => void;

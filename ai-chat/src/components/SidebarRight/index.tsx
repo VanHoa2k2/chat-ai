@@ -26,7 +26,7 @@ export default function SidebarRight() {
   };
   
   return (
-    <div className="w-[60px] min-w-[60px] h-screen bg-white border-l border-oat flex flex-col items-center py-3 gap-1 sticky top-0 z-20">
+    <div className="w-[60px] min-w-[60px] h-[100dvh] bg-white border-l border-oat flex flex-col items-center py-3 gap-1 sticky top-0 z-20">
       {apps.map((app) => (
         <AppButton
           key={app.type}

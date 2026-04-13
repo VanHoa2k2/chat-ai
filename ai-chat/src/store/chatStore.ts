@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { ChatStore, AgentRole, Space, Session, Message, AppType, MessageState, MessageType } from '../types';
+import type { ChatStore, AgentRole, Space, Session, Message, AppType, MessageState } from '../types';
 
 const API_URL = 'https://api.dision.tech/llm/v1/chat/completions';
 const API_KEY = 'fPgoo2jhzd7lMVU4VWFGTN728orMMPsq';
@@ -23,7 +23,8 @@ async function fetchAIResponse(prompt: string): Promise<string> {
   });
 
   if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
+    const errorText = await response.text();
+    throw new Error(errorText || `API error: ${response.status}`);
   }
 
   const data = await response.json();
@@ -32,25 +33,26 @@ async function fetchAIResponse(prompt: string): Promise<string> {
 
 const generateId = () => `id-${Date.now()}-${Math.random().toString(36).substr(2, 9)}${Math.random().toString(36).substr(2, 5)}`;
 
-const agentDescriptions: Record<string, string> = {
-  'agent-1': 'You are a Code Assistant. Help with coding tasks, debugging, and explaining programming concepts.',
-  'agent-2': 'You are a Writing Assistant. Help with writing, editing, improving content.',
-  'agent-3': 'You are a Research Assistant. Help with research and information gathering.',
-  'agent-4': 'You are a Data Analyst. Help analyze data and provide insights.',
-};
+const defaultAgentRoles: AgentRole[] = [
+  { id: 'agent-1', name: 'Code Assistant', description: 'Helps with coding tasks and debugging', icon: 'laptop', color: '#078a52', systemPrompt: 'You are a Code Assistant.' },
+  { id: 'agent-2', name: 'Writer', description: 'Helps with writing and editing content', icon: 'pencil', color: '#43089f', systemPrompt: 'You are a Writing Assistant.' },
+  { id: 'agent-3', name: 'Researcher', description: 'Helps with research and information gathering', icon: 'search', color: '#3bd3fd', systemPrompt: 'You are a Research Assistant.' },
+  { id: 'agent-4', name: 'Data Analyst', description: 'Helps analyze data and provide insights', icon: 'barChart', color: '#fbbd41', systemPrompt: 'You are a Data Analyst.' },
+];
 
 type LoadingKey = 'spaces' | 'sessions' | 'agents' | 'messages' | 'sending';
 
 export const useChatStore = create<ChatStore>()(
   persist(
     (set, get): ChatStore => {
-      const store: ChatStore = {
+      return {
         activeApp: 'agentChat' as AppType,
         activeSpace: null,
         activeSession: null,
         activeAgentRole: null,
+        mobileSidebarOpen: false,
         messages: [],
-        agentRoles: [],
+        agentRoles: defaultAgentRoles,
         spaces: [],
         sessions: [],
         loading: {
@@ -66,6 +68,7 @@ export const useChatStore = create<ChatStore>()(
         setActiveSpace: (space: Space | null) => set({ activeSpace: space, activeSession: null }),
         setActiveSession: (session: Session | null) => set({ activeSession: session }),
         setActiveAgentRole: (agent: AgentRole | null) => set({ activeAgentRole: agent }),
+        setMobileSidebarOpen: (open: boolean) => set({ mobileSidebarOpen: open }),
         setAgentRoles: (agents: AgentRole[]) => set({ agentRoles: agents }),
         setSpaces: (spaces: Space[]) => set({ spaces }),
         setSessions: (sessions: Session[]) => set({ sessions }),
@@ -110,8 +113,8 @@ export const useChatStore = create<ChatStore>()(
             updatedAt: new Date().toISOString(),
             lastMessagePreview: null,
           };
-          store.addSession(newSession);
-          store.setActiveSession(newSession);
+          get().addSession(newSession);
+          get().setActiveSession(newSession);
           return newSession;
         },
 
@@ -124,19 +127,22 @@ export const useChatStore = create<ChatStore>()(
             color: colors[Math.floor(Math.random() * colors.length)],
             sessionCount: 0,
           };
-          store.addSpace(newSpace);
+          get().addSpace(newSpace);
           return newSpace;
         },
 
         sendMessage: async (content: string): Promise<{ userMessage: Message; assistantMessage: Message }> => {
-          set((state) => ({ loading: { ...state.loading, sending: true } }));
+          set((state) => ({ 
+            loading: { ...state.loading, sending: true },
+            error: null 
+          }));
           
           let { activeAgentRole } = get();
           let activeSession = get().activeSession;
           let sessionId = activeSession?.id;
           
           if (!sessionId) {
-            const newSession = store.createSession(activeAgentRole?.id);
+            const newSession = get().createSession(activeAgentRole?.id);
             activeSession = newSession;
             sessionId = newSession.id;
           }
@@ -151,14 +157,22 @@ export const useChatStore = create<ChatStore>()(
             state: 'done' as MessageState,
           };
           
-          store.addMessage(userMessage);
+          get().addMessage(userMessage);
           
           let responseText: string;
+          let errorMessage: string | null = null;
+          
           try {
             responseText = await fetchAIResponse(content);
           } catch (error: unknown) {
             console.error('API call failed:', error);
-            responseText = 'Sorry, I encountered an error. Please try again.';
+            const isNetworkError = error instanceof TypeError && error.message.includes('Failed to fetch');
+            errorMessage = isNetworkError 
+              ? 'Unable to connect. Please check your internet connection and try again.'
+              : 'Something went wrong. Please try again later.';
+            responseText = isNetworkError
+              ? "I apologize, but I'm having trouble connecting to the service. Please check your internet connection and try again."
+              : "I apologize, but something went wrong on my end. Please try again in a moment.";
           }
           
           const assistantMessage: Message = {
@@ -168,10 +182,10 @@ export const useChatStore = create<ChatStore>()(
             type: 'text',
             content: responseText,
             createdAt: new Date().toISOString(),
-            state: 'done' as MessageState,
+            state: errorMessage ? 'error' as MessageState : 'done' as MessageState,
           };
           
-          store.addMessage(assistantMessage);
+          get().addMessage(assistantMessage);
           
           if (activeSession) {
             set((state) => ({
@@ -188,10 +202,9 @@ export const useChatStore = create<ChatStore>()(
           return { userMessage, assistantMessage };
         },
 
-        deleteSpace: (spaceId: string) => store.removeSpace(spaceId),
-        deleteSession: (sessionId: string) => store.removeSession(sessionId),
+        deleteSpace: (spaceId: string) => get().removeSpace(spaceId),
+        deleteSession: (sessionId: string) => get().removeSession(sessionId),
       };
-      return store;
     },
     {
       name: 'ai-chat-storage',
@@ -203,26 +216,3 @@ export const useChatStore = create<ChatStore>()(
     }
   )
 );
-
-export const mockAgentRoles: AgentRole[] = [
-  { id: 'agent-1', name: 'Code Assistant', description: 'Helps with coding tasks and debugging', icon: 'laptop', color: '#078a52', systemPrompt: 'You are a Code Assistant.' },
-  { id: 'agent-2', name: 'Writer', description: 'Helps with writing and editing content', icon: 'pencil', color: '#43089f', systemPrompt: 'You are a Writing Assistant.' },
-  { id: 'agent-3', name: 'Researcher', description: 'Helps with research and information gathering', icon: 'search', color: '#3bd3fd', systemPrompt: 'You are a Research Assistant.' },
-  { id: 'agent-4', name: 'Data Analyst', description: 'Helps analyze data and provide insights', icon: 'barChart', color: '#fbbd41', systemPrompt: 'You are a Data Analyst.' },
-];
-
-export const mockSpaces: Space[] = [
-  { id: 'space-1', name: 'Work Projects', description: 'Work-related conversations', color: '#078a52', sessionCount: 3 },
-  { id: 'space-2', name: 'Personal', description: 'Personal chats', color: '#43089f', sessionCount: 2 },
-  { id: 'space-3', name: 'Research', description: 'Research and exploration', color: '#3bd3fd', sessionCount: 1 },
-];
-
-export function initializeStore() {
-  const state = useChatStore.getState();
-  if (state.agentRoles.length === 0) {
-    state.setAgentRoles(mockAgentRoles);
-  }
-  if (state.spaces.length === 0) {
-    state.setSpaces(mockSpaces);
-  }
-}

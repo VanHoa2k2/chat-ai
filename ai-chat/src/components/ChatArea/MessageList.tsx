@@ -22,7 +22,7 @@ export function MessageList() {
   
   if (!activeSession && !activeAgentRole) {
     return (
-      <div className="h-full flex items-center justify-center p-8">
+      <div className="h-[calc(100dvh-180px)] flex items-center justify-center p-8">
         <div className="text-center">
           <Bot className="w-12 h-12 text-silver mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-charcoal mb-2">Start a conversation</h3>
