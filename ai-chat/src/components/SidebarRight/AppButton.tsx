@@ -1,4 +1,4 @@
-import type { AppType } from '../../types';
+import type { AppType } from '@/types';
 
 interface AppButtonProps {
   type: AppType;
@@ -9,7 +9,7 @@ interface AppButtonProps {
   onClick: () => void;
 }
 
-export function AppButton({ icon, label, isActive, disabled, onClick }: AppButtonProps) {
+export const AppButton = ({ icon, label, isActive, disabled, onClick }: AppButtonProps) => {
   return (
     <button
       className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl cursor-pointer transition-all border-0 ${

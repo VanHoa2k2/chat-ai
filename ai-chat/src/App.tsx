@@ -4,7 +4,7 @@ import ChatArea from './components/ChatArea';
 import SidebarRight from './components/SidebarRight';
 import { Menu } from 'lucide-react';
 
-function App() {
+const App = () => {
   const { mobileSidebarOpen, setMobileSidebarOpen } = useChatStore();
   
   return (

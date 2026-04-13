@@ -2,7 +2,7 @@ import { ChatHeader } from './ChatHeader';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
 
-export default function ChatArea() {
+const ChatArea = () => {
   return (
     <div className="flex-1 flex flex-col h-[100dvh] bg-cream">
       <div className="flex-1 flex flex-col min-h-0">
@@ -18,4 +18,6 @@ export default function ChatArea() {
       </div>
     </div>
   );
-}
+};
+
+export default ChatArea;

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { Pencil, Trash2 } from 'lucide-react';
 
@@ -13,7 +14,7 @@ interface DropdownMenuProps {
   hovered: boolean;
 }
 
-export function DropdownMenuWrapper({ items, hovered }: DropdownMenuProps) {
+const DropdownMenuWrapperComponent = ({ items, hovered }: DropdownMenuProps) => {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
@@ -34,9 +35,9 @@ export function DropdownMenuWrapper({ items, hovered }: DropdownMenuProps) {
             boxShadow: '0px 1px 1px rgba(0,0,0,0.1), 0px -1px 1px inset rgba(0,0,0,0.04), 0px -0.5px 1px rgba(0,0,0,0.05)',
           }}
         >
-          {items.map((item, index) => (
+          {items.map((item) => (
             <DropdownMenu.Item 
-              key={index}
+              key={item.label}
               className={`px-4 py-2.5 text-sm hover:bg-oat-light cursor-pointer outline-none flex items-center gap-3 rounded-lg mx-1 ${
                 item.danger ? 'text-red-500 hover:bg-red-50' : 'text-charcoal'
               }`}
@@ -53,4 +54,6 @@ export function DropdownMenuWrapper({ items, hovered }: DropdownMenuProps) {
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
   );
-}
+};
+
+export const DropdownMenuWrapper = memo(DropdownMenuWrapperComponent);

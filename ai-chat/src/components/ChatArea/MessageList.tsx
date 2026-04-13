@@ -1,24 +1,35 @@
-import { useRef, useEffect, useMemo } from 'react';
-import { User, Bot } from 'lucide-react';
-import { useChatStore } from '../../store/chatStore';
-import type { Message } from '../../types';
+import { useCallback, useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
+import { Bot } from 'lucide-react';
+import { useChatStore } from '@/store/chatStore';
+import { MessageItem } from './MessageItem';
+import type { Message } from '@/types';
 
-export function MessageList() {
-  const activeSession = useChatStore((state) => state.activeSession);
-  const activeAgentRole = useChatStore((state) => state.activeAgentRole);
-  const allMessages = useChatStore((state) => state.messages);
-  const isSending = useChatStore((state) => state.loading.sending);
+export const MessageList = () => {
+  const { activeSession, activeAgentRole, allMessages, isSending } = useChatStore(
+    useShallow((state) => ({
+      activeSession: state.activeSession,
+      activeAgentRole: state.activeAgentRole,
+      allMessages: state.messages,
+      isSending: state.loading.sending,
+    }))
+  );
   
   const messages = useMemo(() => {
     if (!activeSession) return [];
     return allMessages.filter((m: Message) => m.sessionId === activeSession.id);
   }, [allMessages, activeSession]);
   
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollToBottom = useCallback(() => {
+    const messagesEndRef = document.getElementById('messages-end');
+    messagesEndRef?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
   
-  useEffect(() => { 
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  useCallback(() => {
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages, scrollToBottom]);
   
   if (!activeSession && !activeAgentRole) {
     return (
@@ -35,37 +46,9 @@ export function MessageList() {
   }
   
   return (
-    <div className="flex-1 p-4 space-y-4 pt-4 pb-4">
+    <div className="flex-1 p-4 space-y-4 pt-0 pb-4">
       {messages.map((message: Message) => (
-        <div 
-          key={message.id} 
-          className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
-        >
-          <div 
-            className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-              message.role === 'user' 
-                ? 'bg-oat-light text-charcoal' 
-                : 'bg-ube-800 text-white'
-            }`}
-          >
-            {message.role === 'user' 
-              ? <User className="w-4 h-4" /> 
-              : <Bot className="w-4 h-4" />
-            }
-          </div>
-          <div className="min-w-0 max-w-[70%]">
-            <div className={`px-4 py-3 rounded-2xl ${
-              message.role === 'user' 
-                ? 'bg-white border border-oat' 
-                : 'bg-ube-50 border border-ube-100'
-            } text-charcoal`}>
-              <p className="whitespace-pre-wrap break-words m-0 text-sm">{message.content}</p>
-            </div>
-            <div className={`text-xs text-silver mt-1.5 ${message.role === 'user' ? 'mr-1 text-right' : 'ml-1'}`}>
-              {new Date(message.createdAt).toLocaleTimeString()}
-            </div>
-          </div>
-        </div>
+        <MessageItem key={message.id} message={message} />
       ))}
       {isSending && (
         <div className="flex gap-3">
@@ -79,7 +62,7 @@ export function MessageList() {
           </div>
         </div>
       )}
-      <div ref={messagesEndRef} />
+      <div id="messages-end" />
     </div>
   );
 }

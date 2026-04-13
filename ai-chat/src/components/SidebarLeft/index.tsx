@@ -1,12 +1,18 @@
-import { AgentRoleList } from './AgentRoleList';
-import { SpaceList } from './SpaceList';
-import { SessionList } from './SessionList';
+import { AgentRoleList } from './AgentRoles/AgentRoleList';
+import { SpaceList } from './Spaces/SpaceList';
+import { SessionList } from './Sessions/SessionList';
 import { NewChatButton, NewSpaceButton } from './Buttons';
-import { useChatStore } from '../../store/chatStore';
+import { useShallow } from 'zustand/react/shallow';
+import { useChatStore } from '@/store/chatStore';
 import { X } from 'lucide-react';
 
-export default function SidebarLeft() {
-  const { mobileSidebarOpen, setMobileSidebarOpen } = useChatStore();
+const SidebarLeft = () => {
+  const { mobileSidebarOpen, setMobileSidebarOpen } = useChatStore(
+    useShallow((state) => ({
+      mobileSidebarOpen: state.mobileSidebarOpen,
+      setMobileSidebarOpen: state.setMobileSidebarOpen,
+    }))
+  );
   
   return (
     <div className={`sidebar-left w-60 min-w-[240px] h-[100dvh] bg-white border-r border-oat flex flex-col sticky top-0 ${mobileSidebarOpen ? 'open' : ''}`}>
@@ -30,4 +36,6 @@ export default function SidebarLeft() {
       </nav>
     </div>
   );
-}
+};
+
+export default SidebarLeft;

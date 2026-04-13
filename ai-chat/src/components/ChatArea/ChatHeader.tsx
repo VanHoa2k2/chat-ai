@@ -1,23 +1,15 @@
-import { useChatStore } from '../../store/chatStore';
-import { Laptop, Search, BarChart2, Pencil } from 'lucide-react';
-import type { AgentRole } from '../../types';
+import { useShallow } from 'zustand/react/shallow';
+import { useChatStore } from '@/store/chatStore';
+import { getAgentIcon } from '../utils/agentIcon';
 
-const iconMap: Record<string, React.ReactNode> = {
-  laptop: <Laptop className="w-5 h-5" />,
-  pencil: <Pencil className="w-5 h-5" />,
-  search: <Search className="w-5 h-5" />,
-  barChart: <BarChart2 className="w-5 h-5" />,
-};
-
-function getAgentIcon(agent: AgentRole) {
-  if (typeof agent.icon === 'string' && iconMap[agent.icon]) {
-    return iconMap[agent.icon];
-  }
-  return <span>{agent.icon}</span>;
-}
-
-export function ChatHeader() {
-  const { activeAgentRole, activeSession, activeSpace } = useChatStore();
+export const ChatHeader = () => {
+  const { activeAgentRole, activeSession, activeSpace } = useChatStore(
+    useShallow((state) => ({
+      activeAgentRole: state.activeAgentRole,
+      activeSession: state.activeSession,
+      activeSpace: state.activeSpace,
+    }))
+  );
   
   let title = 'Welcome';
   let subtitle = 'Select a chat or start a new conversation';
@@ -42,7 +34,7 @@ export function ChatHeader() {
       </div>
       {activeAgentRole && (
         <div className="flex items-center gap-2 px-3 py-1.5 bg-oat-light rounded-full text-sm font-medium">
-          <span style={{ color: activeAgentRole.color }}>{getAgentIcon(activeAgentRole)}</span>
+          {getAgentIcon(activeAgentRole, false)}
           <span>{activeAgentRole.name}</span>
         </div>
       )}

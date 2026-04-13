@@ -1,20 +1,17 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { ChatStore, AgentRole, Space, Session, Message, AppType, MessageState } from '../types';
-
-const API_URL = 'https://api.dision.tech/llm/v1/chat/completions';
-const API_KEY = 'fPgoo2jhzd7lMVU4VWFGTN728orMMPsq';
-const MODEL = 'chat';
+import type { ChatStore, AgentRole, Space, Session, Message, AppType, MessageState } from '@/types';
+import { CONFIG } from '@/config';
 
 async function fetchAIResponse(prompt: string): Promise<string> {
-  const response = await fetch(API_URL, {
+  const response = await fetch(CONFIG.API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${API_KEY}`,
+      'Authorization': `Bearer ${CONFIG.API_KEY}`,
     },
     body: JSON.stringify({
-      model: MODEL,
+      model: CONFIG.MODEL,
       messages: [
         { role: 'user', content: prompt },
       ],
@@ -28,6 +25,7 @@ async function fetchAIResponse(prompt: string): Promise<string> {
   }
 
   const data = await response.json();
+  
   return data.choices?.[0]?.message?.content || 'No response';
 }
 

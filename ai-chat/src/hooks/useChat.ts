@@ -1,20 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useChatStore } from '../store/chatStore';
-import type { Space, Session, AgentRole, Message } from '../types';
-
-const API_URL = 'https://api.dision.tech/llm/v1/chat/completions';
-const API_KEY = 'fPgoo2jhzd7lMVU4VWFGTN728orMMPsq';
-const MODEL = 'chat';
+import { useChatStore } from '@/store/chatStore';
+import type { Space, Session, AgentRole, Message } from '@/types';
+import { CONFIG } from '@/config';
 
 async function fetchAI(prompt: string, systemPrompt: string): Promise<string> {
-  const response = await fetch(API_URL, {
+  const response = await fetch(CONFIG.API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${API_KEY}`,
+      'Authorization': `Bearer ${CONFIG.API_KEY}`,
     },
     body: JSON.stringify({
-      model: MODEL,
+      model: CONFIG.MODEL,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt },

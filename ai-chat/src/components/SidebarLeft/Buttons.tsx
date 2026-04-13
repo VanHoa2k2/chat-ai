@@ -1,9 +1,15 @@
 import { Plus } from 'lucide-react';
-import { useChatStore } from '../../store/chatStore';
-import { useCreateSession, useCreateSpace } from '../../hooks/useChat';
+import { useShallow } from 'zustand/react/shallow';
+import { useChatStore } from '@/store/chatStore';
+import { useCreateSession, useCreateSpace } from '@/hooks/useChat';
 
-export function NewChatButton() {
-  const { activeAgentRole, activeSpace } = useChatStore();
+export const NewChatButton = () => {
+  const { activeAgentRole, activeSpace } = useChatStore(
+    useShallow((state) => ({
+      activeAgentRole: state.activeAgentRole,
+      activeSpace: state.activeSpace,
+    }))
+  );
   const createSessionMutation = useCreateSession();
 
   const handleClick = async () => {
@@ -24,7 +30,7 @@ export function NewChatButton() {
   );
 }
 
-export function NewSpaceButton() {
+export const NewSpaceButton = () => {
   const createSpaceMutation = useCreateSpace();
 
   const handleClick = async () => {

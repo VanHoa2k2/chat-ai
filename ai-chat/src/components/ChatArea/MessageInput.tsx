@@ -1,38 +1,43 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useCallback } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { Send } from 'lucide-react';
-import { useChatStore } from '../../store/chatStore';
+import { useChatStore } from '@/store/chatStore';
 
-export function MessageInput() {
-  const activeSession = useChatStore((state) => state.activeSession);
-  const activeAgentRole = useChatStore((state) => state.activeAgentRole);
-  const isSending = useChatStore((state) => state.loading.sending);
-  const sendMessage = useChatStore((state) => state.sendMessage);
+export const MessageInput = () => {
+  const { activeSession, activeAgentRole, isSending, sendMessage } = useChatStore(
+    useShallow((state) => ({
+      activeSession: state.activeSession,
+      activeAgentRole: state.activeAgentRole,
+      isSending: state.loading.sending,
+      sendMessage: state.sendMessage,
+    }))
+  );
   const [input, setInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
-  const handleSend = async () => {
+  const handleSend = useCallback(async () => {
     if (!input.trim() || isSending) return;
     
     const content = input.trim();
     setInput('');
     await sendMessage(content);
-  };
+  }, [input, isSending, sendMessage]);
   
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
-  };
+  }, [handleSend]);
   
-  const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleInput = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = 'auto';
       textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
     }
-  };
+  }, []);
   
   if (!activeSession && !activeAgentRole) {
     return null;
